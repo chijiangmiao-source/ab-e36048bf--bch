@@ -1,0 +1,17 @@
+{
+  "name": "narrow-bch-verify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "窄义二进制本原 BCH 码字离线复核：本原多项式校验、循环陪集生成多项式、综合症/Berlekamp-Massey/Chien 证据闭合判定",
+  "scripts": {
+    "test": "node test/run.js",
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "verify": "node scripts/verify.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

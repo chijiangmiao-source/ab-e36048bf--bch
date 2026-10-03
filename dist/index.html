@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>窄义二进制 BCH 离线码字复核</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>窄义二进制 BCH 码字复核</h1>
+    <p class="subtitle">
+      硬判决比特离线验证 · 先验本原多项式，再以 α…α^(2t) 循环陪集构造生成多项式 ·
+      综合症 → Berlekamp–Massey → Chien 搜索同一位序
+    </p>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="form-title">
+      <h2 id="form-title">输入参数</h2>
+      <form id="decode-form" novalidate>
+        <div class="grid">
+          <label class="field">
+            <span class="label">域阶数 m</span>
+            <input id="input-m" name="m" type="number" min="2" max="16" step="1" value="7" inputmode="numeric" />
+            <small class="hint">2 ≤ m ≤ 16，码长 n = 2^m − 1</small>
+          </label>
+
+          <label class="field">
+            <span class="label">纠错能力 t</span>
+            <input id="input-t" name="t" type="number" min="1" step="1" value="2" inputmode="numeric" />
+            <small class="hint">连续根 α, α², …, α^(2t)</small>
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="label">原始（本原）多项式比特串</span>
+          <input id="input-poly" name="poly" class="mono" type="text" spellcheck="false"
+                 autocomplete="off" value="10010001" placeholder="例如 m=7: 10010001（x^0 在串首）" />
+          <small class="hint">
+            仅含 0/1，第 i 位是 x^i 的系数；必须恰为 m 次且在 GF(2) 上本原。
+            例：m=3 → <code>1101</code>（x³+x+1），m=4 → <code>11001</code>（x⁴+x+1），m=7 → <code>10010001</code>（x⁷+x³+1）
+          </small>
+        </label>
+
+        <label class="field">
+          <span class="label">
+            接收码字（长度须恰为 <span id="expected-n">127</span> = 2^m−1）
+          </span>
+          <textarea id="input-word" name="word" class="mono word" spellcheck="false"
+                    autocomplete="off" rows="3"
+                    placeholder="仅含 0/1，第 i 位对应 x^i"></textarea>
+          <small class="hint">
+            <span id="word-length-info">当前长度：0</span>
+            ，位序与多项式串一致（串首 = x⁰ 系数）
+          </small>
+        </label>
+
+        <div class="actions">
+          <button type="submit" id="btn-verify" class="primary">复核</button>
+          <button type="button" id="btn-clear" class="ghost">清空草稿和结论</button>
+          <span id="worker-status" class="worker-status" role="status"></span>
+        </div>
+      </form>
+    </section>
+
+    <section id="result" class="card result-card" aria-live="polite" hidden>
+      <!-- 由 app.js 渲染：成功证据或失败原因 -->
+    </section>
+
+    <section class="card doc">
+      <h2>判定规则（窄义二进制本原 BCH）</h2>
+      <ol>
+        <li>先验证多项式确为 m 次<strong>本原多项式</strong>（不可约且 α 的阶恰为 2^m−1）。</li>
+        <li>取 α, α², …, α^(2t) 所在的互不相同 2-循环陪集，其最小多项式之积为生成多项式 g(x)。</li>
+        <li>以同一位序计算综合症 S₁…S₂ₜ、Berlekamp–Massey 定位多项式 σ(x)、Chien 搜索根位置。</li>
+        <li>
+          <strong>仅当</strong> Chien 根数 = deg σ 且纠正后全部综合症为零时，才给出“可纠正”结论；
+          任何环节不闭合都判为失败并清除旧成功证据。
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <span>静态页面 · Web Worker 离线计算 · 无外部网络依赖</span>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

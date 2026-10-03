@@ -1,0 +1,49 @@
+# Docker Compose：窄义二进制 BCH 离线复核
+#
+# 服务：
+#   web     —— 静态页面，宿主机端口可用环境变量 HOST_PORT 配置（默认 8080），
+#              对外暴露健康响应 /healthz。
+#   verify  —— 单次校验服务：有限域/BCH 规则测试 -> 构建页面 ->
+#              健康页 + 可纠正样例 HTTP 冒烟，完成后以退出码结束。
+#
+# 常用：
+#   HOST_PORT=9090 docker compose up -d --build web
+#   docker compose run --rm verify        # 退出码即校验结果（CI 可用）
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: narrow-bch-verify:latest
+    environment:
+      PORT: "8080"
+      HOST: "0.0.0.0"
+      STATIC_DIR: "dist"
+    ports:
+      # 宿主机端口可配置：HOST_PORT=9090 docker compose up web
+      - "${HOST_PORT:-8080}:8080"
+    healthcheck:
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+    restart: unless-stopped
+
+  verify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: narrow-bch-verify:latest
+    environment:
+      # verify 内部会在临时端口自起服务做冒烟，不占用宿主端口
+      HOST: "127.0.0.1"
+      PORT: "0"
+    # 单次运行：测试 + 构建 + 健康页/可纠正样例 HTTP 冒烟，随后退出
+    command: ["node", "scripts/verify.mjs"]
+    restart: "no"

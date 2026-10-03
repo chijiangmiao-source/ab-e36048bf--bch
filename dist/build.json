@@ -1,0 +1,13 @@
+{
+  "name": "narrow-bch-verify",
+  "builtAt": "2026-10-03T03:14:36.313Z",
+  "git": "7fedc33",
+  "files": [
+    "index.html",
+    "styles.css",
+    "app.js",
+    "worker.js",
+    "lib/gf.js",
+    "lib/bch.js"
+  ]
+}
